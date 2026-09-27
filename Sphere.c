@@ -9,6 +9,7 @@ void main(){
     while (respN < 2 || respN > 10){
         printf("How many spherical segments you want to evaluate [2-10]?");
         scanf("%d", &respN);
+        printf("%.2f", respN);
     }
 
     //decalre values to be summed up for the eventual average
@@ -25,16 +26,18 @@ void main(){
             float respR;
             printf("What is the radius of the sphere (R)? \n");
             scanf("%f", &respR);
+            printf("%.2f", respR);
 
             float respHA;
             printf("What is the height of the top area of the spherical segment (ha)? \n");
             scanf("%f", &respHA);
+            printf("%.2f", respHA);
 
             float respHB;
             printf("What is the height of the bottom area of the spherical segment (hb)? \n");
             scanf("%f", &respHB);
-
-            printf("Entered Data: R = %f HA =  %f HB = %f\n", respR, respHA, respHB);
+            printf("%.2f", respHB);
+            printf("Entered Data: R = %.2f HA =  %.2f HB = %.2f\n", respR, respHA, respHB);
 
             //if any of the following get triggered then one of the values is incorrect, split up to work better in my head
 
@@ -50,14 +53,14 @@ void main(){
                 float a = sqrt((respR*respR - respHA * respHA));
                 float b = sqrt((respR*respR - respHB * respHB));
                 float h = respHA - respHB;
-                float VOL = ((float)1/6) * pi * h * (3 * a * a + 3 * b * b + h * h);
+                float VOL = (1.0/6.0) * pi * h * (3 * a * a + 3 * b * b + h * h);
                 float SA = (pi * a * a) + (pi * b * b) + (2 * pi * respR * h);
                 
-                printf("Total Surface Area = %f Volume  =  %f ", SA, VOL);
+                printf("Total Surface Area = %.2f Volume  =  %.2f ", SA, VOL);
                 sumSA += SA;
                 sumVOL += VOL;
             }
         }
     }
-    printf("Average Surface Area = %f Average Volume  =  %f \n", sumSA/respN, sumVOL/respN);
+    printf("Average Surface Area = %.2f Average Volume  =  %.2f \n", sumSA/respN, sumVOL/respN);
 }
