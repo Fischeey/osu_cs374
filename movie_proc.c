@@ -242,7 +242,7 @@ int main(int argc, char **argv)
             {
                 
                 struct movie* curPos = head;
-
+                int marked = 0;
                 while (curPos != NULL)
                 {
                     struct movie* incPos = head;
@@ -253,7 +253,17 @@ int main(int argc, char **argv)
                         if (curPos->year == incPos->year&&incPos->rating>curPos->rating)
                         {
                             most = 0;
+                        } else if (curPos->year == incPos->year&&incPos->rating==curPos->rating)
+                        {
+                            if (curPos->year==marked)
+                            {
+                                most = 0;
+                            } else {
+                            marked = curPos->year;
+                            }
                         }
+
+                        
                         
                         incPos = incPos->next;
                     }
