@@ -288,7 +288,6 @@ int main(int argc, char **argv)
 
         // Free the memory allocated by getline for currLine
     free(currLine);
-    printMovieList(head);
     freeMovieList(head);
     
     // Close the file
