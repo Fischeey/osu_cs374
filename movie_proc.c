@@ -137,6 +137,7 @@ void freeMovieList(struct movie* list){
  */
 int main(int argc, char **argv)
 {
+    
     if (argc < 2)
     {
         printf("You must provide the name of the file to process\n");
@@ -192,12 +193,12 @@ int main(int argc, char **argv)
     }
 
 
+    printf("Processed file %s and parsed data for %d movies\n", argv[1], count);
 
 
 
 
-
-
+    
 
 
   
@@ -217,16 +218,22 @@ int main(int argc, char **argv)
                 printf("Enter the year for which you want to see movies: \n");
                 int respyear;
                 scanf("%d", &respyear);
-
+                int found = 0;
                 struct movie* curPos = head;
                 while (curPos != NULL)
                 {
                     if (curPos->year == respyear)
                     {
+                        found = 1;
                         printf("%s \n", curPos->title);
                     }
                     curPos = curPos->next;
                 }
+                if (found == 0)
+                {
+                    printf("No data about movies released in the year %d \n", respyear);
+                }
+                
                 printf("\n");
             } else if (respO == 2)
             {
