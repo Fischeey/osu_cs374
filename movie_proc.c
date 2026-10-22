@@ -253,13 +253,13 @@ int main(int argc, char **argv)
                         if (curPos->year == incPos->year&&incPos->rating>curPos->rating)
                         {
                             most = 0;
-                        } else if (curPos->year == incPos->year&&incPos->rating==curPos->rating)
+                        } else if (curPos->year == incPos->year&&incPos->rating==curPos->rating&&strcmp(curPos->title, incPos->title)!=0)
                         {
                             if (curPos->year==marked)
                             {
                                 most = 0;
                             } else {
-                            marked = curPos->year;
+                                marked = curPos->year;
                             }
                         }
 
