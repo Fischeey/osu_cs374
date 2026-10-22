@@ -209,10 +209,13 @@ int main(int argc, char **argv)
         printf("1. Show movies released in the specified year\n"
             "2. Show highest rated movie for each year\n"
             "3. Show the title and year of release of all movies in a specific language\n"
-            "4. Exit from the program\n");
+            "4. Exit from the program\n\n");
 
+            printf("Enter a choice from 1 to 4: ");
             int respO;
             scanf("%d", &respO);
+
+
             if (respO == 1)
             {
                 printf("Enter the year for which you want to see movies: \n");
@@ -237,13 +240,32 @@ int main(int argc, char **argv)
                 printf("\n");
             } else if (respO == 2)
             {
-
+                
                 struct movie* curPos = head;
+
                 while (curPos != NULL)
                 {
-                    printf("hello");
+                    struct movie* incPos = head;
+                    int most = 1;
+
+                    while (incPos != NULL)
+                    {
+                        if (curPos->year == incPos->year&&incPos->rating>curPos->rating)
+                        {
+                            most = 0;
+                        }
+                        
+                        incPos = incPos->next;
+                    }
+
+                    if (most==1)
+                    {
+                        printf("%d %.1f %s\n", curPos->year, curPos->rating, curPos->title);
+                    }
+                    
+                    
+                    curPos = curPos->next;
                 }
-                curPos = curPos->next;
 
                 printf("\n");
             }else if (respO == 3)
