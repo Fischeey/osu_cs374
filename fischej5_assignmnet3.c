@@ -128,28 +128,31 @@ void freeMovieList(struct movie *list)
 
 void processFile(char fileName[257], int size)
 {
-    int file_descriptor = open(fileName, 'r');
-
-    if (file_descriptor == -1)
-    {
-        printf("open() failed on \"%s\"\n", fileName);
-        perror("Error");
-        exit(1);
-    }
-    int rand_num = (rand() % (100000));
-    char numarr[8];
-    char pathname[24] = "./fischej5.movies.";
-    snprintf(numarr, sizeof(numarr), "%d", rand_num);
-    strcat(pathname, numarr);
+    int rand_num = (rand() % 100000);
+    
+    
+    char pathname[512]; 
+    snprintf(pathname, sizeof(pathname), "./fischej5.movies.%d", rand_num);
     printf("Created directory with name %s\n\n", pathname);
 
+    
+    int resDir = mkdir(pathname, 0750); 
+    if (resDir == -1) {
+        perror("Error creating directory");
+        // Handle error or exit if necessary
+    }
+
+    // Append the trailing slash for the subsequent file operations
     strcat(pathname, "/");
-    int resDir = mkdir(pathname, 0750);
+
     FILE *movieFile = fopen(fileName, "r");
+    if (movieFile == NULL) {
+        perror("Error opening source file");
+        return;
+    }
+
     char *currLine = NULL;
     size_t len = 0;
-    // Open the specified file for reading only
-    // Read the file line by line
 
     struct movie *head = NULL;
     struct movie *tail = NULL;
@@ -157,72 +160,70 @@ void processFile(char fileName[257], int size)
     char *saveptr;
     int count = 0;
 
+    // Skip header line
     getline(&currLine, &len, movieFile);
+    
     while (getline(&currLine, &len, movieFile) != -1)
     {
-
         const char *delim = ",";
         char *token = strtok_r(currLine, delim, &saveptr);
+        if (!token) continue;
         char *title = strdup(token);
+        
         token = strtok_r(NULL, delim, &saveptr);
-        int year = atoi(token);
+        int year = token ? atoi(token) : 0;
 
         token = strtok_r(NULL, delim, &saveptr);
         char *languageArr = token;
+        
         token = strtok_r(NULL, delim, &saveptr);
-
-        double rating = strtod(token, NULL);
+        double rating = token ? strtod(token, NULL) : 0.0;
+        
         newMovie = createMovie(title, year, languageArr, rating);
 
-        // Is this the first element in the linked list?
         if (head == NULL)
         {
-            // This is the first element in the linked link
-            // Set the head and the tail to this element
             head = newMovie;
             tail = newMovie;
         }
         else
         {
-            // This is not the first element.
-            // Add this element to the list and advance the tail
             tail->next = newMovie;
             tail = newMovie;
         }
-
         count++;
     }
 
-
-
-    int found = 0;
     struct movie *curPos = head;
     while (curPos != NULL)
     {
-        char tempPathName[513] = "";
-        strcpy(tempPathName, pathname);
-        char yearStr[8] = "";
-        snprintf(yearStr, sizeof(yearStr), "%d", curPos->year);
-        strcat(tempPathName, yearStr);
-        strcat(tempPathName, ".txt");
-        int yearFile = open(tempPathName, O_WRONLY | O_CREAT | O_APPEND, 0640);
-
         
-        char tempTitle[128] = "";
-        strcat(tempTitle, curPos->title);
-        strcat(tempTitle, "\n");
+        char tempPathName[640] = "";
+        snprintf(tempPathName, sizeof(tempPathName), "%s%d.txt", pathname, curPos->year);
+
+        // Windows open call format
+        int yearFile = open(tempPathName, O_WRONLY | O_CREAT | O_APPEND, 0640);
+        if (yearFile < 0) {
+            perror("Error opening year file");
+            curPos = curPos->next;
+            continue;
+        }
+        
+        
+        char tempTitle[256] = "";
+        snprintf(tempTitle, sizeof(tempTitle), "%s\n", curPos->title);
+        
         ssize_t bytes_written = write(yearFile, tempTitle, strlen(tempTitle));
         if (bytes_written < 0) {
             perror("Error writing to file");
-            close(yearFile);
-            return;
         }
         close(yearFile);
         curPos = curPos->next;
     }
 
-    
-    close(file_descriptor);
+    free(currLine);
+    freeMovieList(head);
+    fclose(movieFile);
 }
 
 /**
@@ -246,15 +247,21 @@ void processFile(char fileName[257], int size)
  */
 int main(int argc, char **argv)
 {
-    srand(time(NULL));
-    DIR *dir = opendir(".");
 
-    struct dirent *entry;
-    struct stat dirStat;
-
+DIR *dir = opendir(".");
     int exit = 0;
     while (exit == 0)
     {
+        srand(time(NULL));
+        
+        
+
+        struct dirent *entry;
+        struct stat dirStat;
+
+
+
+
         printf("1. Select file to process\n"
                "2. Exit the program\n\n"
                "Enter a choice 1 or 2: ");
@@ -264,6 +271,8 @@ int main(int argc, char **argv)
             printf("\n");
         if (respO == 1)
         {
+            closedir(dir);
+        dir = opendir(".");
             int exitI = 0;
             while (exitI == 0)
             {
@@ -295,7 +304,7 @@ int main(int argc, char **argv)
                     }
                     if (largestFileSize == 0)
                     {
-                        printf("error123\n");
+                        printf("no largest file found\n");
                     }
                     else
                     {
@@ -306,6 +315,8 @@ int main(int argc, char **argv)
                 }
                 else if (respI == 2)
                 {
+                    closedir(dir);
+        dir = opendir(".");
                     char smallestFileName[257];
                     int smallestFileSize = 10000000;
                     while ((entry = readdir(dir)) != NULL)
@@ -322,7 +333,7 @@ int main(int argc, char **argv)
                     }
                     if (smallestFileSize == 10000000)
                     {
-                        printf("error123\n");
+                        printf("no smallest file found\n");
                     }
                     else
                     {
@@ -333,6 +344,8 @@ int main(int argc, char **argv)
                 }
                 else if (respI == 3)
                 {
+                    closedir(dir);
+        dir = opendir(".");
                     char fileName[257];
                     int size = 0;
                     printf("Enter the complete file name: ");
