@@ -141,9 +141,9 @@ void processFile(char fileName[257], int size)
     char pathname[24] = "./fischej5.movies.";
     snprintf(numarr, sizeof(numarr), "%d", rand_num);
     strcat(pathname, numarr);
+    printf("Created directory with name %s\n", pathname);
     strcat(pathname, "/");
     int resDir = mkdir(pathname, 0750);
-
     FILE *movieFile = fopen(fileName, "r");
     char *currLine = NULL;
     size_t len = 0;
