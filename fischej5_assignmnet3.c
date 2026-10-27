@@ -141,7 +141,8 @@ void processFile(char fileName[257], int size)
     char pathname[24] = "./fischej5.movies.";
     snprintf(numarr, sizeof(numarr), "%d", rand_num);
     strcat(pathname, numarr);
-    printf("Created directory with name %s\n", pathname);
+    printf("Created directory with name %s\n\n", pathname);
+
     strcat(pathname, "/");
     int resDir = mkdir(pathname, 0750);
     FILE *movieFile = fopen(fileName, "r");
@@ -255,12 +256,12 @@ int main(int argc, char **argv)
     while (exit == 0)
     {
         printf("1. Select file to process\n"
-               "2. Exit the program\n"
-               "Enter a choice 1 or 2:\n");
+               "2. Exit the program\n\n"
+               "Enter a choice 1 or 2: ");
 
         int respO;
         scanf("%d", &respO);
-
+            printf("\n");
         if (respO == 1)
         {
             int exitI = 0;
@@ -269,12 +270,12 @@ int main(int argc, char **argv)
                 printf("Which file you want to process?\n"
                        "Enter 1 to pick the largest file\n"
                        "Enter 2 to pick the smallest file\n"
-                       "Enter 3 to specify the name of a file\n"
-                       "Enter a choice from 1 to 3:\n");
+                       "Enter 3 to specify the name of a file\n\n"
+                       "Enter a choice from 1 to 3: ");
 
                 int respI;
                 scanf("%d", &respI);
-
+                printf("\n");
                 if (respI == 1)
                 {
                     char largestFileName[257];
@@ -334,9 +335,9 @@ int main(int argc, char **argv)
                 {
                     char fileName[257];
                     int size = 0;
-                    printf("Enter the complete file name:\n");
+                    printf("Enter the complete file name: ");
                     scanf("%s", fileName);
-
+                    printf("\n");
                     while ((entry = readdir(dir)) != NULL)
                     {
                         stat(entry->d_name, &dirStat);
@@ -353,7 +354,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        printf("erro5324\n");
+                        printf("The file %s was not found. Try again\n", fileName);
                     }
                 }
                 else
