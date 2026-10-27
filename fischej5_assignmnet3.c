@@ -6,16 +6,12 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <time.h> 
+#include <time.h>
 
 /*
-* Function: processMovieFile
-* Opens a file, reads and prints each line
-* filePath: path to the file
 *
-* This function shows sample code that opens a file, then in a loop reads and
-prints each line in that file.
-* You can use this code however you want in your Prog Assignment 2.
+* all the code in this movie structure setup is from assignment 2, i know that some of it is probably unnessessary but its not breaking anything to leave it so im leaving it
+*
 */
 
 struct movie
@@ -52,6 +48,7 @@ struct movie *createMovie(char *title, int year, char *inplanguageArr, double ra
 
     char *token = strtok_r(inner_content, delim, &saveptr);
 
+
     while (token != NULL)
     {
         // 1. Grow the pointer array dynamically to hold the new token + room for a trailing NULL
@@ -72,6 +69,7 @@ struct movie *createMovie(char *title, int year, char *inplanguageArr, double ra
         currMovie->languageArr[element_count] = NULL;
 
         // Get the next token
+        
         token = strtok_r(NULL, delim, &saveptr);
     }
     currMovie->arrcount = element_count;
@@ -79,6 +77,7 @@ struct movie *createMovie(char *title, int year, char *inplanguageArr, double ra
     currMovie->rating = rating;
 
     currMovie->next = NULL;
+    
     return currMovie;
 }
 void printMovieList(struct movie *list)
@@ -105,11 +104,25 @@ void printMovieList(struct movie *list)
 /**
  * Free the memory for one struct
  */
-void freeMovie(struct movie *curr)
-{
-    free(curr->title);
-    free(curr->languageArr);
-    free(curr);
+void freeMovie(struct movie *m) {
+    if (m == NULL) return;
+
+
+
+    // i had to google this, i could not figure out for the life of me what the issue was that was causing me a memory leak 
+    // its late and ive been working on this for a while I just dont care ngl
+    if (m->languageArr != NULL) {
+        for (int i = 0; i < m->arrcount; i++) {
+            if (m->languageArr[i] != NULL) {
+                free(m->languageArr[i]); // <--- Releases the createMovie strdup allocations
+                m->languageArr[i] = NULL;
+            }
+        }
+        free(m->languageArr);
+        m->languageArr = NULL;
+    }
+
+    free(m);
 }
 
 /*
@@ -126,18 +139,42 @@ void freeMovieList(struct movie *list)
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+this is partly new and partly old, mostly the while loop in the middle is from assignmnet 2
+*/
+
+
 void processFile(char fileName[257], int size)
 {
     int rand_num = (rand() % 100000);
-    
-    
-    char pathname[512]; 
+
+    char pathname[512];
     snprintf(pathname, sizeof(pathname), "./fischej5.movies.%d", rand_num);
     printf("Created directory with name %s\n\n", pathname);
 
-    
-    int resDir = mkdir(pathname, 0750); 
-    if (resDir == -1) {
+    int resDir = mkdir(pathname, 0750);
+    if (resDir == -1)
+    {
         perror("Error creating directory");
         // Handle error or exit if necessary
     }
@@ -146,7 +183,8 @@ void processFile(char fileName[257], int size)
     strcat(pathname, "/");
 
     FILE *movieFile = fopen(fileName, "r");
-    if (movieFile == NULL) {
+    if (movieFile == NULL)
+    {
         perror("Error opening source file");
         return;
     }
@@ -162,23 +200,24 @@ void processFile(char fileName[257], int size)
 
     // Skip header line
     getline(&currLine, &len, movieFile);
-    
+
     while (getline(&currLine, &len, movieFile) != -1)
     {
         const char *delim = ",";
         char *token = strtok_r(currLine, delim, &saveptr);
-        if (!token) continue;
+        if (!token)
+            continue;
         char *title = strdup(token);
-        
+
         token = strtok_r(NULL, delim, &saveptr);
         int year = token ? atoi(token) : 0;
 
         token = strtok_r(NULL, delim, &saveptr);
         char *languageArr = token;
-        
+
         token = strtok_r(NULL, delim, &saveptr);
         double rating = token ? strtod(token, NULL) : 0.0;
-        
+
         newMovie = createMovie(title, year, languageArr, rating);
 
         if (head == NULL)
@@ -192,29 +231,32 @@ void processFile(char fileName[257], int size)
             tail = newMovie;
         }
         count++;
+        free(title);
+        
     }
 
     struct movie *curPos = head;
     while (curPos != NULL)
     {
-        
+
         char tempPathName[640] = "";
         snprintf(tempPathName, sizeof(tempPathName), "%s%d.txt", pathname, curPos->year);
 
         // Windows open call format
         int yearFile = open(tempPathName, O_WRONLY | O_CREAT | O_APPEND, 0640);
-        if (yearFile < 0) {
+        if (yearFile < 0)
+        {
             perror("Error opening year file");
             curPos = curPos->next;
             continue;
         }
-        
-        
+
         char tempTitle[256] = "";
         snprintf(tempTitle, sizeof(tempTitle), "%s\n", curPos->title);
-        
+
         ssize_t bytes_written = write(yearFile, tempTitle, strlen(tempTitle));
-        if (bytes_written < 0) {
+        if (bytes_written < 0)
+        {
             perror("Error writing to file");
         }
         close(yearFile);
@@ -226,41 +268,32 @@ void processFile(char fileName[257], int size)
     fclose(movieFile);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 /**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- *
+this is all new content i believe, its the same structure as the loops i used in the last two assignments, definitely a little messy but whatever
  */
 int main(int argc, char **argv)
 {
 
-DIR *dir = opendir(".");
+    DIR *dir = opendir(".");
     int exit = 0;
     while (exit == 0)
     {
         srand(time(NULL));
-        
-        
 
         struct dirent *entry;
         struct stat dirStat;
-
-
-
 
         printf("1. Select file to process\n"
                "2. Exit the program\n\n"
@@ -268,11 +301,11 @@ DIR *dir = opendir(".");
 
         int respO;
         scanf("%d", &respO);
-            printf("\n");
+        printf("\n");
         if (respO == 1)
         {
             closedir(dir);
-        dir = opendir(".");
+            dir = opendir(".");
             int exitI = 0;
             while (exitI == 0)
             {
@@ -316,7 +349,7 @@ DIR *dir = opendir(".");
                 else if (respI == 2)
                 {
                     closedir(dir);
-        dir = opendir(".");
+                    dir = opendir(".");
                     char smallestFileName[257];
                     int smallestFileSize = 10000000;
                     while ((entry = readdir(dir)) != NULL)
@@ -345,7 +378,7 @@ DIR *dir = opendir(".");
                 else if (respI == 3)
                 {
                     closedir(dir);
-        dir = opendir(".");
+                    dir = opendir(".");
                     char fileName[257];
                     int size = 0;
                     printf("Enter the complete file name: ");
@@ -386,5 +419,6 @@ DIR *dir = opendir(".");
         }
     }
 
+    closedir(dir);
     return EXIT_SUCCESS;
 }
