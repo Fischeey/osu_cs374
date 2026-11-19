@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <limits.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
@@ -19,7 +20,6 @@ struct command_line
     int argc;
     char *input_file;
     char *output_file;
-    char file_path;
     bool is_comment;
     bool is_bg;
 };
@@ -65,8 +65,11 @@ struct command_line *parse_input()
 
 int main()
 {
+    char file_path[512];
     char exit_status[48];
     struct command_line *curr_command = NULL;
+    char *home = getenv("HOME");
+    strcpy(home, file_path);
     strcpy(exit_status, "exit status 0");
     while (true)
     {
@@ -86,10 +89,10 @@ int main()
         {
             char *home = getenv("HOME");
             if (curr_command->argc == 1){
-                printf("change directory HOME\n");
+                
                 chdir(home);
             } else {
-                printf("change directory OTHER\n");
+                
                 printf("%s\n", curr_command->argv[1]);
                 chdir(curr_command->argv[1]);
             }
