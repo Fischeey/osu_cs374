@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 #define INPUT_LENGTH 2048
 #define MAX_ARGS 512
@@ -18,7 +19,6 @@ struct command_line
     int argc;
     char *input_file;
     char *output_file;
-    char *exit_status;
     char file_path;
     bool is_comment;
     bool is_bg;
@@ -65,7 +65,9 @@ struct command_line *parse_input()
 
 int main()
 {
-    struct command_line *curr_command;
+    char exit_status[48];
+    struct command_line *curr_command = NULL;
+    strcpy(exit_status, "exit status 0");
     while (true)
     {
         printf(": ");
@@ -94,12 +96,20 @@ int main()
             
         } else if (strcmp(curr_command->argv[0], "status")==0)
         {
-            printf("%s\n", curr_command->exit_status);
+            printf("%s\n", exit_status);
         } else {
             pid_t spawnpid = -5;
             int intVal = 10;
             // If fork is successful, the value of spawnpid will be 0 in the child
             // and will be the child's pid in the parent
+            printf("run function");
+            if (curr_command->input_file != NULL) {
+                printf("input_file: %s\n", curr_command->input_file);
+            }
+            if (curr_command->output_file != NULL) {
+                printf("output_file: %s\n", curr_command->output_file);
+            }
+            fflush(stdout);
             spawnpid = fork();
             switch (spawnpid){
                 case -1:
@@ -107,12 +117,33 @@ int main()
                     exit(1);
                     break;
                 case 0:
+
+
+                if (curr_command->input_file != NULL) {
+                    int in_fd = open(curr_command->input_file, O_RDONLY);
+                    if (in_fd == -1) {
+                        perror("cannot open input file");
+                        exit(1);
+                    }
+                    dup2(in_fd, STDIN_FILENO);
+                    close(in_fd);
+                }
+
+                if (curr_command->output_file != NULL) {
+                    int out_fd = open(curr_command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                    if (out_fd == -1) {
+                        perror("cannot open output file");
+                        exit(1);
+                    }
+                    dup2(out_fd, STDOUT_FILENO);
+                    close(out_fd);
+                }
                     // spawnpid is 0 in the child
                     execvp(curr_command->argv[0], curr_command->argv);
                     // Only reached if execvp fails:
                     perror(curr_command->argv[0]);
-
-                    _exit(1);
+                    strcpy(exit_status, "exit status 0");
+                    exit(1);
                 default:
                     // spawnpid is the pid of the child
                     int childStatus;
