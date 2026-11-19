@@ -34,9 +34,14 @@ struct command_line *parse_input()
     fgets(input, INPUT_LENGTH, stdin);
     // Tokenize the input
     char *token = strtok(input, " \n");
+    curr_command->is_comment = 0;
     while (token)
     {
-        if (!strcmp(token, "<"))
+        if (token[0] == '#')
+        {
+            curr_command->is_comment = true;
+            break; // ignore the rest of the comment line
+        }  else if (!strcmp(token, "<"))
         {
             curr_command->input_file = strdup(strtok(NULL, " \n"));
         }
@@ -47,10 +52,6 @@ struct command_line *parse_input()
         else if (!strcmp(token, "&"))
         {
             curr_command->is_bg = true;
-        }
-        else if (!strcmp(token, "#"))
-        {
-            curr_command->is_comment = true;
         }
         else
         {
@@ -76,11 +77,11 @@ int main()
         printf(": ");
         fflush(stdout);
         curr_command = parse_input();
-
+        printf("%s\n", curr_command->is_comment ? "true" : "false");
         if (curr_command->is_comment == true)
         {
             printf("comment");
-            
+            break;
         } else if (strcmp(curr_command->argv[0], "exit")==0)
         {
             printf("exit\n");
