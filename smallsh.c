@@ -77,7 +77,7 @@ int main()
         printf(": ");
         fflush(stdout);
         curr_command = parse_input();
-        printf("%s\n", curr_command->is_comment ? "true" : "false");
+        //printf("%s\n", curr_command->is_comment ? "true" : "false");
         if (curr_command->is_comment == true)
         {
             printf("comment");
@@ -89,10 +89,14 @@ int main()
         } else if (strcmp(curr_command->argv[0], "cd")==0)
         {
             char *home = getenv("HOME");
-            if (curr_command->argc == 1){
-                
-                chdir(home);
-            } else {
+    if (curr_command->argc == 1) {
+        char *home = getenv("HOME");
+        if (home == NULL || home[0] == '\0') {
+            fprintf(stderr, "cd: HOME not set\n");
+        } else if (chdir(home) != 0) {
+            perror("cd");
+        }
+    } else {
                 
                 printf("%s\n", curr_command->argv[1]);
                 chdir(curr_command->argv[1]);
@@ -106,7 +110,7 @@ int main()
             int intVal = 10;
             // If fork is successful, the value of spawnpid will be 0 in the child
             // and will be the child's pid in the parent
-            printf("run function");
+            //printf("run function");
             if (curr_command->input_file != NULL) {
                 printf("input_file: %s\n", curr_command->input_file);
             }
