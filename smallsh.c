@@ -80,7 +80,6 @@ int main()
         //printf("%s\n", curr_command->is_comment ? "true" : "false");
         if (curr_command->is_comment == true)
         {
-            printf("comment");
             break;
         } else if (strcmp(curr_command->argv[0], "exit")==0)
         {
