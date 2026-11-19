@@ -7,7 +7,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #define INPUT_LENGTH 2048
 #define MAX_ARGS 512
 struct command_line
@@ -27,7 +29,7 @@ struct command_line *parse_input()
     struct command_line *curr_command = (struct command_line *)calloc(1,
                                                                       sizeof(struct command_line));
     // Get input
-    printf(": ");
+    
     fflush(stdout);
     fgets(input, INPUT_LENGTH, stdin);
     // Tokenize the input
@@ -58,11 +60,16 @@ struct command_line *parse_input()
     }
     return curr_command;
 }
+
+
+
 int main()
 {
     struct command_line *curr_command;
     while (true)
     {
+        printf(": ");
+        fflush(stdout);
         curr_command = parse_input();
 
         if (curr_command->is_comment == true)
@@ -81,16 +88,40 @@ int main()
                 chdir(home);
             } else {
                 printf("change directory OTHER\n");
-                printf(curr_command->argv[1]);
+                printf("%s\n", curr_command->argv[1]);
                 chdir(curr_command->argv[1]);
             }
             
         } else if (strcmp(curr_command->argv[0], "status")==0)
         {
-            printf(curr_command->exit_status);
+            printf("%s\n", curr_command->exit_status);
         } else {
-            printf("other\n");
+            pid_t spawnpid = -5;
+            int intVal = 10;
+            // If fork is successful, the value of spawnpid will be 0 in the child
+            // and will be the child's pid in the parent
+            spawnpid = fork();
+            switch (spawnpid){
+                case -1:
+                    perror("fork() failed!");
+                    exit(1);
+                    break;
+                case 0:
+                    // spawnpid is 0 in the child
+                    execvp(curr_command->argv[0], curr_command->argv);
+                    // Only reached if execvp fails:
+                    perror(curr_command->argv[0]);
+
+                    _exit(1);
+                default:
+                    // spawnpid is the pid of the child
+                    int childStatus;
+                    waitpid(spawnpid, &childStatus, 0);
+                    break;
+            }
+            
         }
+        
         
         
     }
