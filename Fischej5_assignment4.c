@@ -1,7 +1,7 @@
 /**
- *
- *
- *
+ * jackson fischer
+ * assignment 4
+ * i think i cleared the memory but with my setup i dont have an actual way to check sorry 
  */
 
 // included libraries
@@ -38,7 +38,11 @@ struct command_line *parse_input()
     
     
     //get input
-    fgets(input, INPUT_LENGTH, stdin);
+    if (fgets(input, INPUT_LENGTH, stdin) == NULL)
+    {
+        input[0] = '\0';
+    }
+
     
     // Tokenize the input and loop through the tokens to get informatino about the input
     char *token = strtok(input, " \n");
@@ -157,16 +161,22 @@ int main()
         fflush(stdout);
         //parse input function
         curr_command = parse_input();
+        if (curr_command == NULL)
+        {
+            continue;
+        }
         // if statements that run the actual parts of the program
-        if (curr_command->is_comment == true)
+        if (curr_command->is_comment == true || curr_command->argc == 0 || curr_command->argv[0] == NULL)
         {
             //if its a comment we can skip it
+            free(curr_command);
             continue;
         }
         else if (strcmp(curr_command->argv[0], "exit") == 0)
         {
             //on exit we should leave
             printf("exit\n");
+            free(curr_command);
             break;
         }
         else if (strcmp(curr_command->argv[0], "cd") == 0)
@@ -198,12 +208,14 @@ int main()
                     perror("cd");
                 }
             }
+            free(curr_command);
         }
         else if (strcmp(curr_command->argv[0], "status") == 0)
         {
             //print last return status from a function
             printf("%s\n", exit_status);
             fflush(stdout);
+            free(curr_command);
         }
         else
         {
@@ -219,6 +231,8 @@ int main()
             {
             case -1:
                 //fail
+                free(curr_command);
+                curr_command=NULL;
                 exit(1);
                 break;
             case 0:
@@ -280,8 +294,10 @@ int main()
                     snprintf(exit_status, sizeof(exit_status), "terminated by signal %d", sig);
                 }
                 fflush(stdout);
+                free(curr_command);
                 break;
             }
+            
         }
     }
     return EXIT_SUCCESS;
