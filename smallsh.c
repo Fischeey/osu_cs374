@@ -84,9 +84,9 @@ int main()
     struct command_line *curr_command = NULL;
 
     char *home = getenv("HOME");
-if (home != NULL) {
-    snprintf(file_path, sizeof(file_path), "%s", home);
-}
+    if (home != NULL) {
+        snprintf(file_path, sizeof(file_path), "%s", home);
+    }
     strcpy(exit_status, "exit value 0");
     
 
@@ -160,11 +160,10 @@ void handle_SIGTSTP(int signo) {
             break;
         } else if (strcmp(curr_command->argv[0], "cd") == 0) {
     if (curr_command->argc == 1) {
-        const char *home = getenv("HOME");
-        if (home == NULL || home[0] == '\0') {
-            struct passwd *pw = getpwuid(getuid());
-            if (pw != NULL && pw->pw_dir != NULL) {
-                home = pw->pw_dir;
+        char *home = getenv("HOME");
+        if (home != NULL && home[0] != '\0') {
+            if (chdir(home) != 0) {
+                perror("cd");
             }
         }
 
