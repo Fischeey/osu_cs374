@@ -20,7 +20,7 @@
 // defining constants
 #define INPUT_LENGTH 2048
 #define MAX_ARGS 512
-
+#define MAX_BG_PIDS 512
 //define command line struct
 struct command_line
 {
@@ -42,8 +42,9 @@ struct command_line *parse_input()
     fflush(stdout);
     fgets(input, INPUT_LENGTH, stdin);
     // Tokenize the input
+
     char *token = strtok(input, " \n");
-    curr_command->is_comment = 0;
+    curr_command->is_comment = false;
     while (token)
     {
         if (token[0] == '#')
@@ -135,7 +136,7 @@ void handle_SIGTSTP(int signo) {
         int pid;
         int status =-1;
         while ((pid = waitpid(-1, &status, WNOHANG)) > 0){
-            
+            fprintf(stderr, "[DBG] waitpid returned pid=%d, status=%d\n", pid, status);
             if (WIFEXITED(status)) {
                 printf("background pid %d is done: exit value %d\n", pid, WEXITSTATUS(status));
             } else if (WIFSIGNALED(status)) {
@@ -219,16 +220,17 @@ void handle_SIGTSTP(int signo) {
                     exit(1);
                 default:
                     // spawnpid is the pid of the child
-                    int childStatus;
-                    if (curr_command->is_bg == true && foreground_only==false){
-                        printf("backgroun pid is %d", spawnpid);
-                        waitpid(spawnpid, &status, WNOHANG);
-                        PID_arr[PID_arr_length] = spawnpid;
-                        PID_arr_length += 1;
-                        printf("%d\n",PID_arr_length);
-                    } else {
-                        waitpid(spawnpid, &childStatus, 0);
-                    }
+                    int childStatus = 0;
+                        if (curr_command->is_bg && !foreground_only) {
+                            printf("background pid is %d\n", spawnpid);
+                            fflush(stdout);
+                            if (PID_arr_length < MAX_BG_PIDS) {
+                                PID_arr[PID_arr_length++] = spawnpid;
+                            }
+                        } else {
+                            waitpid(spawnpid, &childStatus, 0);
+                            // Update foreground exit / signal status here
+                        }
                     
 
 
