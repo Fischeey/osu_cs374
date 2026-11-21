@@ -82,7 +82,12 @@ int main()
     int PID_arr[64];
     int PID_arr_length = 0;
     struct command_line *curr_command = NULL;
-    char *home = getenv("HOME");
+    const char *home = getenv("HOME");
+if (home != NULL && home[0] != '\0') {
+    if (chdir(home) != 0) {
+        perror("cd");
+    }
+}
     strcpy(home, file_path);
     strcpy(exit_status, "exit value 0");
     
