@@ -91,7 +91,7 @@ int main()
     {
         int pid;
         int status =-1;
-        while (pid = waitpid(-1, &status, WNOHANG) > 0){
+        while ((pid = waitpid(-1, &status, WNOHANG)) > 0){
             
             if (WIFEXITED(status)) {
                 printf("background pid %d is done: exit value %d\n", pid, WEXITSTATUS(status));
@@ -111,10 +111,8 @@ int main()
         {
             printf("exit\n");
             break;
-        } else if (strcmp(curr_command->argv[0], "cd")==0)
-        {
-            char *home = getenv("HOME");
-if (curr_command->argc == 1) {
+        } else if (strcmp(curr_command->argv[0], "cd") == 0) {
+    if (curr_command->argc == 1) {
         char *home = getenv("HOME");
         if (home == NULL || home[0] == '\0') {
             fprintf(stderr, "cd: HOME not set\n");
@@ -122,12 +120,11 @@ if (curr_command->argc == 1) {
             perror("cd");
         }
     } else {
-                
-                printf("%s\n", curr_command->argv[1]);
-                chdir(curr_command->argv[1]);
-            }
-            
-        } else if (strcmp(curr_command->argv[0], "status")==0)
+        if (chdir(curr_command->argv[1]) != 0) {
+            perror("cd");
+        }
+    }
+} else if (strcmp(curr_command->argv[0], "status")==0)
         {
             printf("%s\n", exit_status);
         } else {
@@ -181,9 +178,8 @@ if (curr_command->argc == 1) {
                     // spawnpid is the pid of the child
                     int childStatus;
                     if (curr_command->is_bg == true){
-                        printf("backgroun");
                         waitpid(spawnpid, &status, WNOHANG);
-                        PID_arr[PID_arr_length] = childStatus;
+                        PID_arr[PID_arr_length] = spawnpid;
                         PID_arr_length += 1;
                         printf("%d\n",PID_arr_length);
                     } else {
