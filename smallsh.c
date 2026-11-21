@@ -178,6 +178,7 @@ int main()
                     // spawnpid is the pid of the child
                     int childStatus;
                     if (curr_command->is_bg == true){
+                        printf("backgroun pid is %d", spawnpid)
                         waitpid(spawnpid, &status, WNOHANG);
                         PID_arr[PID_arr_length] = spawnpid;
                         PID_arr_length += 1;
