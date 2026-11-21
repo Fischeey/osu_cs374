@@ -88,7 +88,6 @@ if (home != NULL && home[0] != '\0') {
         perror("cd");
     }
 }
-    strcpy(home, file_path);
     strcpy(exit_status, "exit value 0");
     
 
