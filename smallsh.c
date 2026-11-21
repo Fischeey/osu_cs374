@@ -74,9 +74,6 @@ struct command_line *parse_input()
 
 
 
-
-
-
 int main()
 {
     char file_path[512];
@@ -87,6 +84,52 @@ int main()
     char *home = getenv("HOME");
     strcpy(home, file_path);
     strcpy(exit_status, "exit value 0");
+    
+
+void handle_SIGINT(int signo){
+  char* message = "Caught SIGINT\n";
+  // We are using write rather than printf
+  write(STDOUT_FILENO, message, 14);
+}
+
+volatile bool foreground_only = 0;
+
+void handle_SIGTSTP(int signo) {
+    (void)signo;
+    if (foreground_only == 0) {
+        foreground_only = 1;
+        const char *msg = "\nEntering foreground-only mode (& is now ignored)\n";
+        write(STDOUT_FILENO, msg, 50);
+    } else {
+        foreground_only = 0;
+        const char *msg = "\nExiting foreground-only mode\n";
+        write(STDOUT_FILENO, msg, 30);
+    }
+}
+
+
+
+      struct sigaction SIGINT_action = {0};
+      struct sigaction SIGTSTP_action = {0};
+  // Fill out the SIGINT_action struct
+  // Register handle_SIGINT as the signal handler
+  SIGINT_action.sa_handler = handle_SIGINT;
+  SIGTSTP_action.sa_handler = handle_SIGTSTP;
+  // Block all catchable signals while handle_SIGINT is running
+  sigfillset(&SIGINT_action.sa_mask);
+    sigfillset(&SIGTSTP_action.sa_mask);
+  // No flags set
+  SIGINT_action.sa_flags = 0;
+  SIGTSTP_action.sa_flags = 0;
+
+  // Install our signal handler
+  sigaction(SIGINT, &SIGINT_action, NULL);
+  sigaction(SIGTSTP, &SIGTSTP_action, NULL);
+
+
+
+
+
     while (true)
     {
         int pid;
@@ -177,8 +220,8 @@ int main()
                 default:
                     // spawnpid is the pid of the child
                     int childStatus;
-                    if (curr_command->is_bg == true){
-                        printf("backgroun pid is %d", spawnpid)
+                    if (curr_command->is_bg == true && foreground_only==false){
+                        printf("backgroun pid is %d", spawnpid);
                         waitpid(spawnpid, &status, WNOHANG);
                         PID_arr[PID_arr_length] = spawnpid;
                         PID_arr_length += 1;
