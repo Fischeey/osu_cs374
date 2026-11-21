@@ -36,8 +36,7 @@ struct command_line *parse_input()
     //build structure and allocate memory for it
     struct command_line *curr_command = (struct command_line *)calloc(1, sizeof(struct command_line));
     
-    //TODO move this
-    fflush(stdout);
+    
     //get input
     fgets(input, INPUT_LENGTH, stdin);
     
@@ -85,6 +84,7 @@ int main()
     if (home != NULL)
     {
         snprintf(file_path, sizeof(file_path), "%s", home);
+        fflush(stdout);
     }
     strcpy(exit_status, "exit value 0");
 
@@ -149,6 +149,7 @@ int main()
             {
                 printf("background pid %d is done: terminated by signal %d\n", pid, WTERMSIG(status));
             }
+            fflush(stdout);
         }
 
         //initial line
@@ -202,6 +203,7 @@ int main()
         {
             //print last return status from a function
             printf("%s\n", exit_status);
+            fflush(stdout);
         }
         else
         {
@@ -210,15 +212,6 @@ int main()
             //some initialization
 
             int spawnpid = -5;
-            //TODO probably delete these if statements and flush
-            if (curr_command->input_file != NULL)
-            {
-                printf("input_file: %s\n", curr_command->input_file);
-            }
-            if (curr_command->output_file != NULL)
-            {
-                printf("output_file: %s\n", curr_command->output_file);
-            }
             fflush(stdout);
             // If fork is successful, the value of spawnpid will be 0 in the child and will be the child's pid in the parent
             spawnpid = fork();
@@ -286,7 +279,7 @@ int main()
                     int sig = WTERMSIG(childStatus);
                     snprintf(exit_status, sizeof(exit_status), "terminated by signal %d", sig);
                 }
-
+                fflush(stdout);
                 break;
             }
         }
